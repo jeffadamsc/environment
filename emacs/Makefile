@@ -1,0 +1,10 @@
+backupdate := $(shell date +%Y-%m-%d_%H-%M-%S)
+
+all:
+	cd ~ && tar czf .emacs.d.$(backupdate).tar.gz .emacs.d/
+	rm -rf ~/.emacs.d/
+	mkdir ~/.emacs.d/
+	cp *.el -t ~/.emacs.d/
+	cp -R use-package/ -t ~/.emacs.d/
+	cp -R plugins/ -t ~/.emacs.d/
+	emacs --refresh-packages
