@@ -1,11 +1,19 @@
 ;;; Personal Customizations
-
+(add-to-list 'load-path "~/.emacs.d/lisp")
 
 (mapc (lambda (mode) (when (fboundp mode) (apply mode '(-1))))
       '(tool-bar-mode
         menu-bar-mode
         scroll-bar-mode))
+(require 'multi-term)
+(setq multi-term-program "/bin/bash")
 
+(defun split-vertical ()
+  (interactive)
+                                        ;(delete-other-windows)
+  (split-window-vertically (floor (* 0.68 (window-height))))
+  (other-window 1)
+  (multi-term))
 
 (defun split-horizontal ()
   (interactive)
@@ -13,18 +21,23 @@
   (when window-system (set-frame-width (selected-frame) 200))
   (split-window-horizontally)
   (other-window 1))
-(global-set-key (kbd "C-x 3") 'split-horizontal)
 
-(add-to-list 'load-path "~/.emacs.d/lisp")
+
+(defun setup-window()
+  (interactive)
+  (when window-system (set-frame-width (selected-frame) 200))
+  (split-window-horizontally)
+  (split-window-vertically (floor (* 0.68 (window-height))))
+  (other-window 1)
+  (multi-term)
+  (other-window 1)
+  (split-window-vertically (floor (* 0.68 (window-height))))
+  (other-window 1)
+  (multi-term))
+(global-set-key (kbd "C-1") 'setup-window)
+
+
 (require 'redo)
-(global-unset-key (kbd "C-r"))
-(global-set-key (kbd "C-r") 'redo)
-(global-set-key (kbd "C-u") 'undo)
-
-(global-set-key (kbd "<C-up>") 'shrink-window)
-(global-set-key (kbd "<C-down>") 'enlarge-window)
-(global-set-key (kbd "<C-left>") 'shrink-window-horizontally)
-(global-set-key (kbd "<C-right>") 'enlarge-window-horizontally)
 
 (when window-system 
   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
@@ -35,12 +48,7 @@
   (beginning-of-line)
   (set-mark-command nil)
   (move-end-of-line nil))
-(global-set-key (kbd "C-v") 'select-line)
 
-(global-unset-key (kbd "C-y"))
-(global-set-key (kbd "C-p") 'yank)
-(global-set-key (kbd "C-y") 'kill-ring-save)
-(global-set-key (kbd "C-d") 'kill-region)
 
 (set-face-attribute 'default nil :height 120)
 (setq ring-bell-function #'ignore
@@ -69,26 +77,6 @@
 (require 'rethink)
 (set-rethink-lisp-indent)
 
-;;remap buffer-list to ibuffer
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-
-;; Allow C-x C-o to go to the last window
-(global-set-key (kbd "C-x C-o")
-                (lambda ()
-                  (interactive)
-                  (other-window -1)))
-
-;; Allow C-x p and C-x C-p to switch frames
-(global-set-key (kbd "C-x p")
-                (lambda ()
-                  (interactive)
-                  (other-frame 1)
-                  (select-frame-set-input-focus (selected-frame))))
-(global-set-key (kbd "C-x C-p")
-                (lambda ()
-                  (interactive)
-                  (other-frame -1)
-                  (select-frame-set-input-focus (selected-frame))))
 
 ;; Put backups and autosaves in separate directory
 (setq backup-directory-alist
@@ -173,17 +161,6 @@
 ;;(require 'evil-elscreen)
 ;(evil-mode 1)
 
-(require 'multi-term)
-(setq multi-term-program "/bin/bash")
-
-(defun split-vertical ()
-  (interactive)
-                                        ;(delete-other-windows)
-  (split-window-vertically (floor (* 0.68 (window-height))))
-  (other-window 1)
-  (multi-term))
-(global-set-key (kbd "C-x 2") 'split-vertical)
-
 
 ;; Going to load first thing with scratch buffer
 (use-package auto-indent-mode
@@ -255,3 +232,53 @@
   :ensure t)
 
 (when window-system (set-frame-width (selected-frame) 100))
+
+(defadvice isearch-repeat (after isearch-no-fail activate)
+  (unless isearch-success
+    (ad-disable-advice 'isearch-repeat 'after 'isearch-no-fail)
+    (ad-activate 'isearch-repeat)
+    (isearch-repeat (if isearch-forward 'forward))
+    (ad-enable-advice 'isearch-repeat 'after 'isearch-no-fail)
+    (ad-activate 'isearch-repeat)))
+
+(global-set-key (kbd "C-x 2") 'split-vertical)
+(global-set-key (kbd "C-g") 'end-of-buffer)
+(global-set-key (kbd "C-x g") 'beginning-of-buffer)
+(global-set-key (kbd "C-x 3") 'split-horizontal)
+(global-unset-key (kbd "C-r"))
+(global-set-key (kbd "C-r") 'redo)
+(global-set-key (kbd "C-u") 'undo)
+
+(global-set-key (kbd "<C-up>") 'shrink-window)
+(global-set-key (kbd "<C-down>") 'enlarge-window)
+(global-set-key (kbd "<C-left>") 'shrink-window-horizontally)
+(global-set-key (kbd "<C-right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "C-v") 'select-line)
+
+(global-unset-key (kbd "C-y"))
+(global-set-key (kbd "C-p") 'yank)
+(global-set-key (kbd "C-y") 'kill-ring-save)
+(global-set-key (kbd "C-d") 'kill-region)
+;;remap buffer-list to ibuffer
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+
+(global-unset-key (kbd "C-/"))
+(global-set-key (kbd "C-/") 'isearch-repeat)
+
+;; Allow C-x C-o to go to the last window
+(global-set-key (kbd "C-x C-o")
+                (lambda ()
+                  (interactive)
+                  (other-window -1)))
+
+;; Allow C-x p and C-x C-p to switch frames
+(global-set-key (kbd "C-x p")
+                (lambda ()
+                  (interactive)
+                  (other-frame 1)
+                  (select-frame-set-input-focus (selected-frame))))
+(global-set-key (kbd "C-x C-p")
+                (lambda ()
+                  (interactive)
+                  (other-frame -1)
+                  (select-frame-set-input-focus (selected-frame))))
