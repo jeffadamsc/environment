@@ -15,6 +15,11 @@
   (other-window 1))
 (global-set-key (kbd "C-x 3") 'split-horizontal)
 
+(add-to-list 'load-path "~/.emacs.d/lisp")
+(require 'redo)
+(global-unset-key (kbd "C-r"))
+(global-set-key (kbd "C-r") 'redo)
+(global-set-key (kbd "C-u") 'undo)
 
 (global-set-key (kbd "<C-up>") 'shrink-window)
 (global-set-key (kbd "<C-down>") 'enlarge-window)
@@ -24,6 +29,18 @@
 (when window-system 
   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
                        '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0)))
+
+(defun select-line ()
+  (interactive)
+  (beginning-of-line)
+  (set-mark-command nil)
+  (move-end-of-line nil))
+(global-set-key (kbd "C-v") 'select-line)
+
+(global-unset-key (kbd "C-y"))
+(global-set-key (kbd "C-p") 'yank)
+(global-set-key (kbd "C-y") 'kill-ring-save)
+(global-set-key (kbd "C-d") 'kill-region)
 
 (set-face-attribute 'default nil :height 120)
 (setq ring-bell-function #'ignore
@@ -49,7 +66,6 @@
 (add-to-list 'auto-mode-alist '("\\.[0-9]+\\'" . fundamental-mode))
 
 ;; Add Rethink Lisp indenting... is there a better way to do this?
-(add-to-list 'load-path "~/.emacs.d/")
 (require 'rethink)
 (set-rethink-lisp-indent)
 
@@ -92,8 +108,8 @@
 
 ;;; Package Support
 
-(add-to-list 'load-path "~/.emacs.d/use-package/")
-(let ((default-directory "~/.emacs.d/plugins/"))
+(add-to-list 'load-path "~/.emacs.d/lisp/use-package/")
+(let ((default-directory "~/.emacs.d/lisp/plugins/"))
   (normal-top-level-add-subdirs-to-load-path))
 
 (require 'package)
@@ -121,7 +137,7 @@
 (use-package cl-lib)
 
 (use-package custom
-  :config (setq custom-file "~/.emacs.d/custom.el"))
+  :config (setq custom-file "~/.emacs.d/lisp/custom.el"))
 
 (use-package uniquify
   :config (setq uniquify-buffer-name-style 'post-forward
@@ -153,9 +169,9 @@
     :ensure t))
 
 
-(require 'evil)
+;(require 'evil)
 ;;(require 'evil-elscreen)
-(evil-mode 1)
+;(evil-mode 1)
 
 (require 'multi-term)
 (setq multi-term-program "/bin/bash")
